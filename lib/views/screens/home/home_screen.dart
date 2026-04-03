@@ -179,159 +179,161 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CircularProgressIndicator(),
             ),
           )
-        : Scaffold(
-            drawer: NavBarScreen(name, userID),
-            appBar: AppBar(
-              title: Text(
-                'Hospital Empanelment',
-                style: GoogleFonts.poppins(fontSize: 16),
+        : SafeArea(
+          child: Scaffold(
+              drawer: NavBarScreen(name, userID),
+              appBar: AppBar(
+                title: Text(
+                  'Hospital Empanelment',
+                  style: GoogleFonts.poppins(fontSize: 16),
+                ),
+                centerTitle: true,
               ),
-              centerTitle: true,
-            ),
-            body: FutureBuilder<List<HospitalAssessmentModel>>(
-              future: data.assessmentsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                final assessments = snapshot.data ?? [];
-                return RefreshIndicator(
-                  onRefresh: () => dataSaved(),
-                  child: ListView(
-                    children: [
-                      if (assessments.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Your Un-Synchronized Assessment',
-                            style: GoogleFonts.aBeeZee(color: Colors.blue),
+              body: FutureBuilder<List<HospitalAssessmentModel>>(
+                future: data.assessmentsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+          
+                  final assessments = snapshot.data ?? [];
+                  return RefreshIndicator(
+                    onRefresh: () => dataSaved(),
+                    child: ListView(
+                      children: [
+                        if (assessments.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Your Un-Synchronized Assessment',
+                              style: GoogleFonts.aBeeZee(color: Colors.blue),
+                            ),
                           ),
-                        ),
-                      // if (assessments.isEmpty)
-                      //   Center(
-                      //       child:
-                      //           Text('No unsynchronized assessments found.')),
-                      if (assessments.isNotEmpty)
+                        // if (assessments.isEmpty)
+                        //   Center(
+                        //       child:
+                        //           Text('No unsynchronized assessments found.')),
+                        if (assessments.isNotEmpty)
+                          Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                        onPressed: () {
+                                          showBottomSheetNew(
+                                              context, assessmentProvider);
+                                        },
+                                        icon: Icon(
+                                          Icons.info,
+                                          color: Colors.blue,
+                                          size: 30,
+                                        ))
+                                  ],
+                                ),
+                              ),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                // Important to make the ListView take only the needed space
+                                physics: const NeverScrollableScrollPhysics(),
+                                // Disable inner ListView scrolling
+                                itemCount: 1,
+                                itemBuilder: (context, index) {
+                                  final assessment = assessments[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: buildTripCard(
+                                        context, assessment, assessmentProvider),
+                                  );
+                                  // // final allSynced = assessment.unsyncedSections
+                                  // //     .every((section) => section.isSynced);
+                                  //
+                                  // return ExpansionTile(
+                                  //   title:
+                                  //       Text('Assessment ${assessment.assessment_id}'),
+                                  //   children: [
+                                  //     // ...assessment.unsyncedSections.map((section) {
+                                  //     //   return ListTile(
+                                  //     //     title: Text('Section ${section.sectionId}'),
+                                  //     //     trailing: section.isSynced
+                                  //     //         ? const Icon(Icons.check, color: Colors.green)
+                                  //     //         : ElevatedButton(
+                                  //     //             onPressed: () {
+                                  //     //               // _syncSection(
+                                  //     //               //     assessment.assessmentId,
+                                  //     //               //     assessment.criteriaId,
+                                  //     //               //     section.sectionId,
+                                  //     //               //     section,
+                                  //     //               //     assessmentProvider,
+                                  //     //               //     data);
+                                  //     //             },
+                                  //     //             child: const Text('Sync'),
+                                  //     //           ),
+                                  //     //   );
+                                  //     // }).toList(),
+                                  //     // if (allSynced)
+                                  //     //   Padding(
+                                  //     //     padding: const EdgeInsets.all(8.0),
+                                  //     //     child: ElevatedButton(
+                                  //     //       onPressed: () {
+                                  //     //         // Implement the complete assessment logic
+                                  //     //       },
+                                  //     //       child: const Text('Complete Assessment'),
+                                  //     //     ),
+                                  //     //   ),
+                                  //   ],
+                                  // );
+                                },
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 20),
+                        // Add some space between the list and the charts
                         Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  IconButton(
-                                      onPressed: () {
-                                        showBottomSheetNew(
-                                            context, assessmentProvider);
-                                      },
-                                      icon: Icon(
-                                        Icons.info,
-                                        color: Colors.blue,
-                                        size: 30,
-                                      ))
-                                ],
-                              ),
-                            ),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              // Important to make the ListView take only the needed space
-                              physics: const NeverScrollableScrollPhysics(),
-                              // Disable inner ListView scrolling
-                              itemCount: 1,
-                              itemBuilder: (context, index) {
-                                final assessment = assessments[index];
-                                return Padding(
+                            Row(
+                              children: [
+                                Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: buildTripCard(
-                                      context, assessment, assessmentProvider),
-                                );
-                                // // final allSynced = assessment.unsyncedSections
-                                // //     .every((section) => section.isSynced);
-                                //
-                                // return ExpansionTile(
-                                //   title:
-                                //       Text('Assessment ${assessment.assessment_id}'),
-                                //   children: [
-                                //     // ...assessment.unsyncedSections.map((section) {
-                                //     //   return ListTile(
-                                //     //     title: Text('Section ${section.sectionId}'),
-                                //     //     trailing: section.isSynced
-                                //     //         ? const Icon(Icons.check, color: Colors.green)
-                                //     //         : ElevatedButton(
-                                //     //             onPressed: () {
-                                //     //               // _syncSection(
-                                //     //               //     assessment.assessmentId,
-                                //     //               //     assessment.criteriaId,
-                                //     //               //     section.sectionId,
-                                //     //               //     section,
-                                //     //               //     assessmentProvider,
-                                //     //               //     data);
-                                //     //             },
-                                //     //             child: const Text('Sync'),
-                                //     //           ),
-                                //     //   );
-                                //     // }).toList(),
-                                //     // if (allSynced)
-                                //     //   Padding(
-                                //     //     padding: const EdgeInsets.all(8.0),
-                                //     //     child: ElevatedButton(
-                                //     //       onPressed: () {
-                                //     //         // Implement the complete assessment logic
-                                //     //       },
-                                //     //       child: const Text('Complete Assessment'),
-                                //     //     ),
-                                //     //   ),
-                                //   ],
-                                // );
-                              },
+                                  child: Text(
+                                    'Dashboard',
+                                    style: GoogleFonts.aBeeZee(
+                                        color: Colors.blue, fontSize: 20),
+                                  ),
+                                )
+                              ],
+                            ),
+                            data.isLoading == true
+                                ? const SizedBox()
+                                : chartData != APIResponse()
+                                    ? _buildCharts(chartData)
+                                    : const SizedBox(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Assessments Chart',
+                                    style: GoogleFonts.aBeeZee(
+                                        color: Colors.blue, fontSize: 20),
+                                  ),
+                                )
+                              ],
                             ),
                           ],
                         ),
-                      const SizedBox(height: 20),
-                      // Add some space between the list and the charts
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Dashboard',
-                                  style: GoogleFonts.aBeeZee(
-                                      color: Colors.blue, fontSize: 20),
-                                ),
-                              )
-                            ],
-                          ),
-                          data.isLoading == true
-                              ? const SizedBox()
-                              : chartData != APIResponse()
-                                  ? _buildCharts(chartData)
-                                  : const SizedBox(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Assessments Chart',
-                                  style: GoogleFonts.aBeeZee(
-                                      color: Colors.blue, fontSize: 20),
-                                ),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          );
+        );
   }
 
   goToAssessmentOffline(AssessmentProvider assessmentProvider,
